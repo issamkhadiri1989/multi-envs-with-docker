@@ -1,0 +1,66 @@
+services:
+    ftp-server:
+        container_name: "ftp_server"
+        networks:
+            - inner_net
+        environment:
+            - FTP_PASS=123
+            - FTP_USER=user
+        image: garethflowers/ftp-server
+        ports:
+            - '20-21:20-21/tcp'
+            - '40000-40009:40000-40009/tcp'
+        volumes:
+            - '/data:/home/user'
+
+    caddy:
+        container_name: "caddy_for_mercure"
+        networks:
+            - inner_net
+        image: dunglas/mercure
+        restart: unless-stopped
+        environment:
+            # Uncomment the following line to disable HTTPS
+            SERVER_NAME: ':80'
+            MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+            MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+            # Uncomment the following line to enable the development mode
+        command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev
+        ports:
+          - "9797:80"
+
+        volumes:
+          - caddy_data:/data
+          - caddy_config:/config
+    mongodb:
+        container_name: "mongodb_host"
+        image: mongo:6-jammy
+        ports:
+            - '27017:27017'
+        volumes:
+            - dbdata6:/data/db
+        networks:
+            - inner_net
+    mongoexpress:
+        container_name: "mongodb_simple_gui_adminer"
+        image: mongo-express
+        ports:
+            - '8081:8081'
+        networks:
+            - inner_net
+        environment:
+            ME_CONFIG_MONGODB_PORT: '27017'
+            ME_CONFIG_MONGODB_SERVER: 'mongodb'
+            ME_CONFIG_MONGODB_ENABLE_ADMIN: 'true'
+
+    rabbitmq:
+        container_name: "rabbitmq_server"
+        image: rabbitmq:3-management-alpine
+        environment:
+            - RABBITMQ_DEFAULT_USER=guest
+            - RABBITMQ_DEFAULT_PASS=guest
+        ports:
+            - 5672:5672 # port to use when writing
+            - 15672:15672 #port to use for UI admin
+        networks:
+            - inner_net
