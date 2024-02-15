@@ -42,7 +42,6 @@ services:
 #        networks:
 #            - inner_net
     server:
-        container_name: "aviato_server"
         build:
             context: .
             dockerfile: ./docker/server/Dockerfile
@@ -62,7 +61,6 @@ services:
         networks:
             - inner_net
     database:
-        container_name: "aviato_database_server"
         healthcheck:
             test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
             interval: 5s
@@ -81,7 +79,6 @@ services:
         networks:
             - inner_net
     myadmin:
-        container_name: "aviato_phpmyadmin"
         image: phpmyadmin/phpmyadmin:5
         environment:
             PMA_HOST: database
@@ -94,7 +91,6 @@ services:
         volumes:
             - db_admin_data:/var/www/html
     mailcatcher:
-        container_name: "aviato_mailer"
         networks:
             - inner_net
         image: yappabe/mailcatcher
